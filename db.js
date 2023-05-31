@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 require('dotenv').config()
 
 exports.dbConnection = async () => {
-    mongoose.connect(process.env.DATABASE_LOCAL, (error) => {
+    mongoose.connect(process.env.DATABASE, (error) => {
         if (!error) {
             console.log('Connected with MongoDB...')
         }
