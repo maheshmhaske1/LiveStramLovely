@@ -12,6 +12,9 @@ const userSchema = new mongoose.Schema({
     photo: {
         type: String
     },
+    about: {
+        type: String
+    },
     dob: {
         type: Date,
     },

@@ -11,7 +11,6 @@ router.get("/", (req, res, next) => {
   res.send("respond with a resource");
 });
 
-
 router.post("/create", userController.createUser);
 router.post("/login", userController.login);
 router.get("/get/:userId", userController.getUser);
@@ -36,7 +35,7 @@ router.post(
 
 router.post("/post/add/:userId", upload_post, userController.addPost);
 router.get("/post/get/:userId", userController.getUserPost);
-router.get('/post/all',userController.getAllPost)
+router.get("/post/all", userController.getAllPost);
 router.delete("/post/delete/:postId", userController.deletePost);
 
 router.post("/post/comment/add", commentCOntroller.addComment);
