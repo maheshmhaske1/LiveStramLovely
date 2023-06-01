@@ -9,6 +9,7 @@ const { default: mongoose } = require("mongoose");
 const commentModel = require("../model/comment.model");
 const likeModel = require("../model/like.model");
 const dotenv = require("dotenv").config();
+const posts = require("../model/post.model");
 
 exports.createUser = async (req, res) => {
   let { name, email, mobile, about, dob, gender } = req.body;
@@ -102,7 +103,7 @@ exports.sendOtp = async (req, res) => {
 
 exports.verifyOtp = async (req, res) => {
   const { mobile, otp } = req.params;
-console.log(otp)
+  console.log(otp);
   if (otp == 1122)
     return res.json({
       status: true,
@@ -212,7 +213,6 @@ exports.resetPassword = async (req, res) => {
 
 exports.isUserExist = async (req, res) => {
   let { mobile } = req.body;
-
 
   const isUserFound = await userModel.findOne({ mobile: mobile });
   if (!isUserFound) {
@@ -685,6 +685,8 @@ exports.getUserPost = async (req, res) => {
     });
 };
 
+// exports.getAllPost = async (req, res) => {};
+
 exports.getAllPost = async (req, res) => {
   await postModel
     .aggregate([
@@ -745,6 +747,7 @@ exports.getAllPost = async (req, res) => {
       },
     ])
     .then(async (success) => {
+      console.log(success);
       return res.json({
         status: true,
         message: `user post details`,
