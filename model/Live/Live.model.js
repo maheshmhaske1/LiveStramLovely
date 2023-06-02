@@ -4,15 +4,20 @@ const liveSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Types.ObjectId,
   },
-  joinedUsers: [{ type: [mongoose.Types.ObjectId] }],
-  waitingUsers: [{ type: [mongoose.Types.ObjectId] }],
-  liveCode: {
+  liveUniqueId: {
     type: String,
+  },
+  channelName: {
+    type: String,
+  },
+  blockedUsers: {
+    type: [mongoose.Types.ObjectId],
   },
   isEnded: {
     type: Boolean,
+    default: false,
   },
 });
 
-var liveModel = mongoose.model("Lives", liveSchema);
+var liveModel = mongoose.model("lives", liveSchema);
 module.exports = liveModel;

@@ -12,6 +12,7 @@ var usersFollowerRouter = require("./routes/followers.router");
 var userSupport = require("./routes/support,.router");
 var feedback = require("./routes/feedbacks.router");
 var level = require("./routes/level.router");
+var live = require("./routes/live.router");
 
 var app = express();
 db.dbConnection();
@@ -44,6 +45,7 @@ app.use("/user/follower", usersFollowerRouter);
 app.use("/support", userSupport);
 app.use("/feedback", feedback);
 app.use("/level", level);
+app.use("/live", live);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

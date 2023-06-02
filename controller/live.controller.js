@@ -1,155 +1,370 @@
-const { default: mongoose } = require("mongoose");
-const liveModel = require("../model/live.model");
+const { default: mongoose, trusted } = require("mongoose");
+const liveModel = require("../model/Live/Live.model");
+const liveJoinedModel = require("../model/Live/liveUsers.model");
+const requestedUsersLiveModel = require("../model/Live/requesJoin.model");
 
 exports.goLive = async (req, res) => {
-  const { userId, liveCode } = req.body;
+  const { userId, liveUniqueId, channelName } = req.body;
 
   await new liveModel({
     userId: userId,
-    liveCode: liveCode,
-    isEnded: isEnded,
+    liveUniqueId: liveUniqueId,
+    channelName: channelName,
   })
     .save()
     .then((success) => {
       return res.json({
         status: true,
-        message: "live session added",
+        message: "Live details added",
       });
     })
     .catch((error) => {
       return res.json({
         status: false,
-        message: "something went wrong",
+        message: "error",
       });
     });
 };
 
-exports.requestJoin = async (req, res) => {
-  const { liveId, userId } = req.body;
+exports.getLives = async (req, res) => {
+  const { userId, liveUniqueId, channelName } = req.body;
 
-  const isLiveFound = await liveModel.findOne({
+  await liveModel
+    .aggregate([
+      {
+        $match: { isEnded: false },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "userId",
+          as: "user",
+        },
+      },
+    ])
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: "Live details",
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
+
+exports.watchLive = async (req, res) => {
+  const { userId, liveId } = req.body;
+
+  const liveData = await liveModel.findOne({
     _id: mongoose.Types.ObjectId(liveId),
   });
 
-  if (!isLiveFound) {
+  let blockedUsers = liveData.blockedUsers;
+
+  const isUserBlocked = await liveModel.findOne({
+    userId: { $in: blockedUsers },
+  });
+
+  if (isUserBlocked) {
+    return res.json({
+      status: false,
+      message: "you are blocked by host not able to join",
+    });
+  }
+
+  if (!liveData) {
     return res.json({
       status: false,
       message: "invalid live id",
     });
   }
 
-  if (isLiveFound.isEnded == true) {
-    return res.json({
-      status: false,
-      message: "live was ended",
-    });
-  }
-
-  if (isLiveFound.liveCode !== liveCode) {
-    return res.json({
-      status: false,
-      message: "invalid live code",
-    });
-  }
-
-  liveModel
-    .findOneAndUpdate({ _id: liveId }, { $push: { waitingUsers: userId } })
-    .then((success) => {
-      return res.json({
-        status: true,
-        message: "you are waiting in live",
-      });
-    })
-    .catch((error) => {
-      return res.json({
-        status: false,
-        message: "something went wrong",
-      });
-    });
-};
-
-exports.joinLive = async (req, res) => {
-  const { liveId, userId, liveCode } = req.body;
-
-  const isLiveFound = await liveModel.findOne({
+  const isliveEnded = await liveModel.findOne({
     _id: mongoose.Types.ObjectId(liveId),
+    isEnded: true,
   });
 
-  if (!isLiveFound) {
-    return res.json({
-      status: false,
-      message: "invalid live id",
-    });
-  }
-
-  if (isLiveFound.isEnded == true) {
+  if (isliveEnded) {
     return res.json({
       status: false,
       message: "live was ended",
     });
   }
 
-  if (isLiveFound.liveCode !== liveCode) {
-    return res.json({
-      status: false,
-      message: "invalid live code",
-    });
-  }
-
-  liveModel
-    .findOneAndUpdate({ _id: liveId }, { $push: { joinedUsers: userId } })
+  new liveJoinedModel({
+    userId: userId,
+    liveId: liveId,
+  })
+    .save()
     .then((success) => {
       return res.json({
         status: true,
-        message: "you are added in live",
+        message: "you are adding to Live watchList",
       });
     })
     .catch((error) => {
       return res.json({
         status: false,
-        message: "something went wrong",
+        message: "error",
       });
     });
 };
 
-exports.updateLive = async (req, res) => {
+exports.addUserInBlockList = async (req, res) => {
+  const { userId, liveId } = req.body;
+
+  await liveModel
+    .findOneAndUpdate({ _id: liveId }, { $push: { blockedUsers: userId } })
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: "user added into blocklist",
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
+
+exports.endLive = async (req, res) => {
   const { liveId } = req.params;
-  const updateData = req.body;
-
-  const isLiveFound = await liveModel.findOne({
-    _id: mongoose.Types.ObjectId(liveId),
-  });
-
-  if (!isLiveFound) {
-    return res.json({
-      status: false,
-      message: "invalid live id",
-    });
-  }
 
   await liveModel
     .findOneAndUpdate(
       { _id: mongoose.Types.ObjectId(liveId) },
       {
-        $set: updateData,
+        $set: { isEnded: true },
       }
     )
     .then((success) => {
       return res.json({
         status: true,
-        message: "live updated",
+        message: "live was ended",
       });
     })
     .catch((error) => {
       return res.json({
         status: false,
-        message: "something went wrong",
+        message: "error",
       });
     });
 };
 
-exports.getLiveDetails = async(req,res)=>{
-    const {liveId} = req.params
+exports.stopWatchingLive = async (req, res) => {
+  const { liveId, userId } = req.body;
 
-    
-}
+  await liveJoinedModel
+    .findOneAndDelete({
+      $and: [
+        { userId: mongoose.Types.ObjectId(userId) },
+        { liveId: mongoose.Types.ObjectId(liveId) },
+      ],
+    })
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: "you left from live watching list",
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
+
+exports.requestToJoinWithLive = async (req, res) => {
+  const { userId, liveId } = req.body;
+
+  const liveData = await liveModel.findOne({
+    _id: mongoose.Types.ObjectId(liveId),
+  });
+
+  let blockedUsers = liveData.blockedUsers;
+
+  const isUserBlocked = await liveModel.findOne({
+    userId: { $in: blockedUsers },
+  });
+
+  if (isUserBlocked) {
+    return res.json({
+      status: false,
+      message: "you are blocked by host not able to join",
+    });
+  }
+
+  if (!liveData) {
+    return res.json({
+      status: false,
+      message: "invalid live id",
+    });
+  }
+
+  const isAlreadyRequestSend = await requestedUsersLiveModel.findOne({
+    userId: mongoose.Types.ObjectId(userId),
+    liveId: mongoose.Types.ObjectId(liveId),
+  });
+
+  console.log("isAlreadyRequestSend ==>", isAlreadyRequestSend);
+
+  if (isAlreadyRequestSend) {
+    return res.json({
+      status: false,
+      message: "you already requested",
+    });
+  }
+
+  const isRequestSend = await new requestedUsersLiveModel({
+    userId: userId,
+    liveId: liveId,
+  }).save();
+  console.log("isRequestSend ==>", isRequestSend);
+
+  if (isRequestSend) {
+    return res.json({
+      status: true,
+      message: "request send to user",
+      data: isRequestSend,
+    });
+  } else {
+    return res.json({
+      status: false,
+      message: "invalid live id",
+    });
+  }
+};
+
+exports.updateLiveJoinRequest = async (req, res) => {
+  const { userId, liveId, status } = req.body;
+
+  const liveData = await liveModel.findOne({
+    _id: mongoose.Types.ObjectId(liveId),
+  });
+
+  let blockedUsers = liveData.blockedUsers;
+
+  const isUserBlocked = await liveModel.findOne({
+    userId: { $in: blockedUsers },
+  });
+
+  if (isUserBlocked) {
+    return res.json({
+      status: false,
+      message: "you are blocked by host not able to join",
+    });
+  }
+
+  if (!liveData) {
+    return res.json({
+      status: false,
+      message: "invalid live id",
+    });
+  }
+
+  await requestedUsersLiveModel
+    .findOneAndUpdate(
+      {
+        userId: userId,
+        liveId: liveId,
+      },
+      {
+        $set: {
+          status: status,
+        },
+      }
+    )
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: `user status changed to ${status}`,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
+
+exports.getPendingRequests = async (req, res) => {
+  const { liveId } = req.params;
+  console.log(liveId);
+
+  const aggregateResult = await requestedUsersLiveModel.aggregate([
+    {
+      $match: { liveId: liveId },
+    },
+  ]);
+  console.log("d==>", aggregateResult);
+
+  await requestedUsersLiveModel
+    .aggregate([
+      {
+        $match: { liveId: liveId, status: 0 },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "userId",
+          as: "user",
+        },
+      },
+    ])
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: `pending request are`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
+
+exports.getAcceptedRequests = async (req, res) => {
+  const { liveId } = req.params;
+
+  await requestedUsersLiveModel
+    .aggregate([
+      {
+        $match: { liveId: liveId, status: 1 },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "userId",
+          as: "user",
+        },
+      },
+    ])
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: `accepted request are`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
