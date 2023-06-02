@@ -390,6 +390,70 @@ exports.addUserWallet = async (req, res) => {
     });
 };
 
+exports.sendGift = async (req, res) => {
+  const { sender, receiver, coin } = req.body;
+
+  const senderr = await userModel.findOne({
+    _id: mongoose.Types.ObjectId(sender),
+  });
+  const receivere = await userModel.findOne({
+    _id: mongoose.Types.ObjectId(receiver),
+  });
+
+  if (!senderr) {
+    return res.json({
+      status: false,
+      message: "invalid sender",
+    });
+  }
+
+  if (!receivere) {
+    return res.json({
+      status: false,
+      message: "invalid sender",
+    });
+  }
+
+  if (senderr.coin < coin) {
+    return res.json({
+      status: false,
+      message: "not enough coin",
+    });
+  }
+
+  const sender_coin = senderr.coin - coin;
+  const reciver_coin = receivere.coin + coin;
+
+  await userModel.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(sender) },
+    {
+      $set: { coin: sender_coin },
+    }
+  );
+
+  await userModel
+    .findOneAndUpdate(
+      { _id: mongoose.Types.ObjectId(receiver) },
+      {
+        $set: { coin: reciver_coin },
+      }
+    )
+    .then((success) => {
+      return res.json({
+        success: true,
+        message: `user registered`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        success: true,
+        message: `error`,
+        data: success,
+      });
+    });
+};
+
 /* ---------- remove profile image ------------ */
 exports.remove_profile_img = async (req, res) => {
   const { user_id, key } = req.body;

@@ -43,7 +43,7 @@ router.post("/", upload.single("file"), function (req, res) {
   });
 });
 
-router.get("/data", async (req, res) => {
+router.get("/user/post/get/all", async (req, res) => {
   await postModel
     .aggregate([
       {

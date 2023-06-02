@@ -18,6 +18,7 @@ router.delete("/delete/:userId", userController.deleteUser);
 router.put("/update/:userId", userController.update);
 router.post("/images/remove", userController.remove_profile_img);
 router.get("/getAll", userController.getAll);
+router.get("/send-gift", userController.sendGift);
 router.post("/is-found", userController.isUserExist);
 router.post("/reset-password", userController.resetPassword);
 router.post("/send-otp/:mobile", userController.sendOtp);
@@ -35,7 +36,7 @@ router.post(
 
 router.post("/post/add/:userId", upload_post, userController.addPost);
 router.get("/post/get/:userId", userController.getUserPost);
-router.get("/post/all", userController.getAllPost);
+// router.get("/post/all", userController.getAllPost);
 router.delete("/post/delete/:postId", userController.deletePost);
 
 router.post("/post/comment/add", commentCOntroller.addComment);
