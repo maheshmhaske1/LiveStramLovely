@@ -778,11 +778,11 @@ exports.getAllPost = async (req, res) => {
           from: "users",
           foreignField: "_id",
           localField: "comments.userId",
-          as: "commented.userDetails",
+          as: "comments.user_data",
         },
       },
       {
-        $addFields: { "comments.userId": "$commented.userDetails" },
+        $unwind: "$comments.user_data"
       },
       {
         $lookup: {
@@ -797,17 +797,11 @@ exports.getAllPost = async (req, res) => {
           from: "users",
           foreignField: "_id",
           localField: "likes.userId",
-          as: "like.userDetails",
+          as: "likes.user_data",
         },
       },
       {
-        $addFields: { "likes.userId": "$like.userDetails" },
-      },
-      {
-        $project: {
-          commented: 0,
-          like: 0,
-        },
+        $unwind: "$likes.user_data"
       },
     ])
     .then(async (success) => {
@@ -826,6 +820,7 @@ exports.getAllPost = async (req, res) => {
       });
     });
 };
+
 
 exports.deletePost = async (req, res) => {
   const { postId } = req.params;
