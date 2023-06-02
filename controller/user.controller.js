@@ -675,7 +675,7 @@ exports.getUserPost = async (req, res) => {
       message: `invalid user_id`,
     });
 
-  await postModel
+    await postModel
     .aggregate([
       {
         $match: { userId: mongoose.Types.ObjectId(userId) },
@@ -691,21 +691,27 @@ exports.getUserPost = async (req, res) => {
       {
         $lookup: {
           from: "comments",
-          foreignField: "postId",
-          localField: "_id",
+          let: { postId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$postId", "$$postId"] },
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                foreignField: "_id",
+                localField: "userId",
+                as: "user_data",
+              },
+            },
+            {
+              $unwind: "$user_data",
+            },
+          ],
           as: "comments",
         },
-      },
-      {
-        $lookup: {
-          from: "users",
-          foreignField: "_id",
-          localField: "comments.userId",
-          as: "commented.userDetails",
-        },
-      },
-      {
-        $addFields: { "comments.userId": "$commented.userDetails" },
       },
       {
         $lookup: {
@@ -720,20 +726,18 @@ exports.getUserPost = async (req, res) => {
           from: "users",
           foreignField: "_id",
           localField: "likes.userId",
-          as: "like.userDetails",
+          as: "likes.user_data",
         },
       },
       {
-        $addFields: { "likes.userId": "$like.userDetails" },
-      },
-      {
-        $project: {
-          commented: 0,
-          like: 0,
+        $unwind: {
+          path: "$likes.user_data",
+          preserveNullAndEmptyArrays: true,
         },
       },
     ])
     .then(async (success) => {
+      console.log(success);
       return res.json({
         status: true,
         message: `user post details`,
