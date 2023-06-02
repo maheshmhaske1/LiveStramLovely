@@ -768,21 +768,27 @@ exports.getAllPost = async (req, res) => {
       {
         $lookup: {
           from: "comments",
-          foreignField: "postId",
-          localField: "_id",
+          let: { postId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$postId", "$$postId"] },
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                foreignField: "_id",
+                localField: "userId",
+                as: "user_data",
+              },
+            },
+            {
+              $unwind: "$user_data",
+            },
+          ],
           as: "comments",
         },
-      },
-      {
-        $lookup: {
-          from: "users",
-          foreignField: "_id",
-          localField: "comments.userId",
-          as: "comments.user_data",
-        },
-      },
-      {
-        $unwind: "$comments.user_data"
       },
       {
         $lookup: {
@@ -801,7 +807,10 @@ exports.getAllPost = async (req, res) => {
         },
       },
       {
-        $unwind: "$likes.user_data"
+        $unwind: {
+          path: "$likes.user_data",
+          preserveNullAndEmptyArrays: true,
+        },
       },
     ])
     .then(async (success) => {
@@ -820,6 +829,7 @@ exports.getAllPost = async (req, res) => {
       });
     });
 };
+
 
 
 exports.deletePost = async (req, res) => {
