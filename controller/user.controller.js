@@ -678,7 +678,7 @@ exports.getUserPost = async (req, res) => {
     await postModel
     .aggregate([
       {
-        $match: { userId: mongoose.Types.ObjectId(userId) },
+        $match: { userId: mongoose.Types.ObjectId(userId) }        
       },
       {
         $lookup: {
@@ -719,20 +719,6 @@ exports.getUserPost = async (req, res) => {
           foreignField: "postId",
           localField: "_id",
           as: "likes",
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          foreignField: "_id",
-          localField: "likes.userId",
-          as: "likes.user_data",
-        },
-      },
-      {
-        $unwind: {
-          path: "$likes.user_data",
-          preserveNullAndEmptyArrays: true,
         },
       },
     ])

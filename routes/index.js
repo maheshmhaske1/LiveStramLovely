@@ -89,21 +89,7 @@ router.get("/user/post/get/all", async (req, res) => {
           localField: "_id",
           as: "likes",
         },
-      },
-      {
-        $lookup: {
-          from: "users",
-          foreignField: "_id",
-          localField: "likes.userId",
-          as: "likes.user_data",
-        },
-      },
-      {
-        $unwind: {
-          path: "$likes.user_data",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+      }
     ])
     .then(async (success) => {
       console.log(success);
