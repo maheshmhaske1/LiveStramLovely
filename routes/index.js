@@ -89,7 +89,7 @@ router.get("/user/post/get/all", async (req, res) => {
           localField: "_id",
           as: "likes",
         },
-      }
+      },
     ])
     .then(async (success) => {
       console.log(success);

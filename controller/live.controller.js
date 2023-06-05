@@ -27,7 +27,6 @@ exports.goLive = async (req, res) => {
 };
 
 exports.getLives = async (req, res) => {
-
   await liveModel
     .aggregate([
       {
@@ -357,6 +356,77 @@ exports.getAcceptedRequests = async (req, res) => {
       return res.json({
         status: true,
         message: `accepted request are`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
+
+exports.getLiveById = async (req, res) => {
+  const { liveId } = req.params;
+
+  const liveData = await liveModel.findOne({
+    _id: mongoose.Types.ObjectId(liveId),
+  });
+
+  if (!liveData) {
+    return res.json({
+      status: false,
+      message: "invalid live id",
+    });
+  }
+
+  if (liveData.isEnded == true) {
+    return res.json({
+      status: false,
+      message: "live is ended",
+    });
+  }
+
+  await liveModel
+    .aggregate([
+      { $match: { _id: mongoose.Types.ObjectId(liveId) } },
+      {
+        // $lookup: {
+        //   from: "live_joineds",
+        //   foreignField: "liveId",
+        //   localField: "_id",
+        //   as: "liveUsers",
+        // },
+        $lookup: {
+          from: "live_joineds",
+          let: { liveId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$liveId", "$$liveId"] },
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                foreignField: "_id",
+                localField: "userId",
+                as: "user_data",
+              },
+            },
+            {
+              $unwind: "$user_data",
+            },
+          ],
+          as: "LiveUser",
+        },
+      },
+    ])
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: `joined users`,
         data: success,
       });
     })

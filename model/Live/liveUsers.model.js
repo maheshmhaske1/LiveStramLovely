@@ -5,8 +5,8 @@ const liveJoinedSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
   },
   liveId: {
-    type: String,
-  }
+    type: mongoose.Types.ObjectId,
+  },
 });
 
 var liveJoinedModel = mongoose.model("live_joined", liveJoinedSchema);
