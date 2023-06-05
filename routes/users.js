@@ -18,7 +18,7 @@ router.delete("/delete/:userId", userController.deleteUser);
 router.put("/update/:userId", userController.update);
 router.post("/images/remove", userController.remove_profile_img);
 router.get("/getAll", userController.getAll);
-router.get("/send-gift", userController.sendGift);
+router.post("/send-gift", userController.sendGift);
 router.post("/is-found", userController.isUserExist);
 router.post("/reset-password", userController.resetPassword);
 router.post("/send-otp/:mobile", userController.sendOtp);
