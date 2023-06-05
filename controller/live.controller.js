@@ -27,7 +27,6 @@ exports.goLive = async (req, res) => {
 };
 
 exports.getLives = async (req, res) => {
-  const { userId, liveUniqueId, channelName } = req.body;
 
   await liveModel
     .aggregate([
