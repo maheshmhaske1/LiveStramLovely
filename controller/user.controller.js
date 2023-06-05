@@ -441,7 +441,7 @@ exports.sendGift = async (req, res) => {
     .then((success) => {
       return res.json({
         success: true,
-        message: `user registered`,
+        message: `${coin} send to sender successfully`,
         data: success,
       });
     })
