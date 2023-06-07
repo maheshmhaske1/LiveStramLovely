@@ -13,6 +13,7 @@ var userSupport = require("./routes/support,.router");
 var feedback = require("./routes/feedbacks.router");
 var level = require("./routes/level.router");
 var live = require("./routes/live.router");
+var admin = require("./routes/admin.router");
 
 var app = express();
 db.dbConnection();
@@ -46,6 +47,7 @@ app.use("/support", userSupport);
 app.use("/feedback", feedback);
 app.use("/level", level);
 app.use("/live", live);
+app.use("/admin", admin);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -58,6 +60,7 @@ app.use(
   express.static(path.join(__dirname, "public/profile_images"))
 ); // PROFILE IMAGES
 app.use("/posts", express.static(path.join(__dirname, "public/posts"))); // PROFILE IMAGES
+app.use("/stores", express.static(path.join(__dirname, "public/store"))); // PROFILE IMAGES
 
 // error handler
 app.use(function (err, req, res, next) {

@@ -23,4 +23,16 @@ exports.upload_post = multer({
 }).single('post')
 
 
+exports.upload_store = multer({
+    storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, `./public/store/`)
+        },
+        filename: function (req, file, cb) {
+            cb(null, `store` + `${Date.now()}` + `_` + file.originalname)
+        }
+    }),
+}).single('store')
+
+
 
