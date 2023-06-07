@@ -45,5 +45,6 @@ router.delete("/post/comment/delete", commentCOntroller.deleteComment);
 
 router.post("/post/like/add", likeController.addLike);
 router.delete("/post/like/remove", likeController.deleteLike);
+router.post("/store/purchase", userController.buyStoreItem);
 
 module.exports = router;

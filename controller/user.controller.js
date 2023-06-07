@@ -10,6 +10,8 @@ const commentModel = require("../model/comment.model");
 const likeModel = require("../model/like.model");
 const dotenv = require("dotenv").config();
 const posts = require("../model/post.model");
+const storeModel = require("../model/store.model");
+const userStoreModel = require("../model/userStore.model");
 
 exports.createUser = async (req, res) => {
   let { name, email, mobile, about, dob, gender } = req.body;
@@ -675,10 +677,10 @@ exports.getUserPost = async (req, res) => {
       message: `invalid user_id`,
     });
 
-    await postModel
+  await postModel
     .aggregate([
       {
-        $match: { userId: mongoose.Types.ObjectId(userId) }        
+        $match: { userId: mongoose.Types.ObjectId(userId) },
       },
       {
         $lookup: {
@@ -820,8 +822,6 @@ exports.getAllPost = async (req, res) => {
     });
 };
 
-
-
 exports.deletePost = async (req, res) => {
   const { postId } = req.params;
 
@@ -856,6 +856,92 @@ exports.deletePost = async (req, res) => {
       return res.json({
         status: true,
         message: `post deleted successfully`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+};
+
+exports.buyStoreItem = async (req, res) => {
+  const { userId, storeId } = req.body;
+
+  const storeItemDetails =await storeModel.findOne({
+    _id: mongoose.Types.ObjectId(storeId),
+  });
+  const userDetails =await userModel.findOne({
+    _id: mongoose.Types.ObjectId(userId),
+  });
+
+  
+  console.log("userDetails.coin =>", userDetails);
+  console.log("storeItemDetails =>", storeItemDetails);
+
+
+  if (!userDetails) {
+    return res.json({
+      status: false,
+      message: "invalid user",
+    });
+  }
+
+  if (!storeItemDetails) {
+    return res.json({
+      status: false,
+      message: "invalid store item",
+    });
+  }
+
+  if (userDetails.coin < storeItemDetails.price) {
+    return res.json({
+      status: false,
+      message: "you don't have enough coins",
+    });
+  }
+
+  function getCurrentDate() {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  const currentDate = getCurrentDate();
+  console.log("currentDate ===>", currentDate); // Output: "2023-06-19" (example)
+
+  function addDaysToDate(dateString, days) {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + days);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  const updatedDate = addDaysToDate(currentDate, 10);
+  console.log("updatedDate ===>", updatedDate); // Output: "2023-06-29"
+
+  await userModel.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(userId) },
+    { $set: { coin: userDetails.coin - storeItemDetails.price } }
+  );
+
+  new userStoreModel({
+    userId: userId,
+    storeId: storeId,
+    validTill: updatedDate,
+  })
+    .save()
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `item purchased successfully`,
         data: success,
       });
     })
