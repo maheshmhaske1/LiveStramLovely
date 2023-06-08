@@ -73,6 +73,14 @@ exports.login = async (req, res) => {
   let { mobile, otp } = req.body;
 
   const isUserFound = await userModel.findOne({ mobile: mobile });
+
+  if(isUserFound.isBlocked==true){
+    return res.json({
+      success: false,
+      message: "you are blocked",
+    });
+  }
+
   if (!isUserFound) {
     return res.json({
       success: false,
