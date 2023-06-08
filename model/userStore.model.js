@@ -7,6 +7,10 @@ const userStoreSchema = new mongoose.Schema({
   storeId: {
     type: mongoose.Types.ObjectId,
   },
+  inUse: {
+    type: Boolean,
+    default: false,
+  },
   validTill: {
     type: Date,
   },

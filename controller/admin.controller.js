@@ -121,7 +121,7 @@ exports.updateUser = async (req, res) => {
 };
 
 exports.addItemStore = async (req, res) => {
-  const { price, name ,validity} = req.body;
+  const { price, name, validity } = req.body;
 
   console.log(req.file);
   if (!req.file)
@@ -135,7 +135,7 @@ exports.addItemStore = async (req, res) => {
   await new storeModel({
     price: price,
     name: name,
-    validity:validity,
+    validity: validity,
     storeUrl: displayPhoto,
   })
     .save()

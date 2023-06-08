@@ -248,13 +248,42 @@ exports.getUser = async (req, res) => {
       success: false,
       message: "user not found",
     });
-  } else {
-    return res.json({
-      success: true,
-      message: "user details",
-      data: isUserFound,
-    });
   }
+
+  await userModel
+    .aggregate([
+      {
+        $match: { _id: mongoose.Types.ObjectId(userId) },
+      },
+      {
+        $lookup: {
+          from: "userstoreitems",
+          foreignField: "userId",
+          localField: "_id",
+          as: "storeItems",
+        },
+      },
+    ])
+    .then((success) => {
+      return res.json({
+        success: true,
+        message: "user details",
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        success: false,
+        message: "something went wrong",
+      });
+    });
+  // else {
+  //   return res.json({
+  //     success: true,
+  //     message: "user details",
+  //     data: isUserFound,
+  //   });
+  // }
 };
 
 exports.deleteUser = async (req, res) => {
@@ -310,6 +339,35 @@ exports.getAll = async (req, res) => {
       data: isUserFound,
     });
   }
+};
+
+exports.updateUserStore = async (req, res) => {
+  const { storeId, userId, inUse } = req.body;
+
+  await userStoreModel
+    .findOneAndUpdate(
+      {
+        userId: mongoose.Types.ObjectId(userId),
+        storeId: mongoose.Types.ObjectId(storeId),
+      },
+      {
+        $set: { inUse: inUse },
+      },
+      { returnOriginal: false }
+    )
+    .then((success) => {
+      return res.json({
+        success: false,
+        message: "user store detail updated",
+        success: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        success: false,
+        message: "something went wrong",
+      });
+    });
 };
 
 exports.update = async (req, res) => {
@@ -871,17 +929,15 @@ exports.deletePost = async (req, res) => {
 exports.buyStoreItem = async (req, res) => {
   const { userId, storeId } = req.body;
 
-  const storeItemDetails =await storeModel.findOne({
+  const storeItemDetails = await storeModel.findOne({
     _id: mongoose.Types.ObjectId(storeId),
   });
-  const userDetails =await userModel.findOne({
+  const userDetails = await userModel.findOne({
     _id: mongoose.Types.ObjectId(userId),
   });
 
-  
   console.log("userDetails.coin =>", userDetails);
   console.log("storeItemDetails =>", storeItemDetails);
-
 
   if (!userDetails) {
     return res.json({
