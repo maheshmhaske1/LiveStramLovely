@@ -48,4 +48,6 @@ router.delete("/post/like/remove", likeController.deleteLike);
 router.post("/store/purchase", userController.buyStoreItem);
 router.put("/store/update", userController.updateUserStore);
 
+router.post("/isBannedDevice", userController.isDeviceBanned);
+
 module.exports = router;

@@ -12,6 +12,7 @@ const dotenv = require("dotenv").config();
 const posts = require("../model/post.model");
 const storeModel = require("../model/store.model");
 const userStoreModel = require("../model/userStore.model");
+const bannedDeviceModel = require("../model/bannedDevice.model");
 
 exports.createUser = async (req, res) => {
   let { name, email, mobile, about, dob, gender } = req.body;
@@ -23,6 +24,28 @@ exports.createUser = async (req, res) => {
       message: "user already exist please login",
     });
   }
+  let id = "";
+  let lastUser = await userModel.find({});
+  lastUser = lastUser[lastUser.length - 1];
+  let lastUserId = "";
+  if (lastUser) {
+    lastUserId = lastUser.id;
+  }
+
+  if (lastUserId == undefined || !lastUser) {
+    id = "000001";
+  } else {
+    function incrementString(str) {
+      const numericPart = parseInt(str.match(/\d+/), 10);
+      const incrementedNumericPart = (numericPart + 1).toString();
+      const leadingZeros = 6 - incrementedNumericPart.length;
+      const result = "0".repeat(leadingZeros) + incrementedNumericPart;
+      return result;
+    }
+    const input = lastUserId;
+    const output = incrementString(input);
+    id = output;
+  }
 
   await new userModel({
     name: name,
@@ -32,6 +55,7 @@ exports.createUser = async (req, res) => {
     photo: "",
     about: about,
     gender: gender,
+    id: id,
   })
     .save()
     .then(async (success) => {
@@ -74,7 +98,7 @@ exports.login = async (req, res) => {
 
   const isUserFound = await userModel.findOne({ mobile: mobile });
 
-  if(isUserFound.isBlocked==true){
+  if (isUserFound.isBlocked == true) {
     return res.json({
       success: false,
       message: "you are blocked",
@@ -1016,4 +1040,20 @@ exports.buyStoreItem = async (req, res) => {
         error,
       });
     });
+};
+
+exports.isDeviceBanned = async (req, res) => {
+  const { bannedDevice } = req.body;
+
+  const isBannedDevice = await bannedDeviceModel.findOne({
+    bannedDevice: bannedDevice,
+  });
+
+  if (isBannedDevice) {
+    return res.json({ status: true, message: "this device is banned" });
+  }
+
+  if (!isBannedDevice) {
+    return res.json({ status: false, message: "this device is not banned" });
+  }
 };

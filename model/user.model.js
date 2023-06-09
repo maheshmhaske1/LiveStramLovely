@@ -33,6 +33,8 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  id: { type: String },
+  deviceId: { type: String },
   token: {
     type: String,
   },

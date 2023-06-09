@@ -3,6 +3,7 @@ const jwtMiddleware = require("../middleware/auth");
 const { default: mongoose } = require("mongoose");
 const userModel = require("../model/user.model");
 const storeModel = require("../model/store.model");
+const bannedDeviceModel = require("../model/bannedDevice.model");
 
 exports.adminLogin = async (req, res) => {
   let { username, password } = req.body;
@@ -162,6 +163,29 @@ exports.getAllStores = async (req, res) => {
       return res.json({
         status: true,
         message: `All Stores`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+};
+
+exports.addDeviceIntoBlock = async (req, res) => {
+  const { bannedDevice } = req.body;
+
+  await new bannedDeviceModel({
+    bannedDevice: bannedDevice,
+  })
+    .save()
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `device added into blocklist`,
         data: success,
       });
     })
