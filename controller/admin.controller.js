@@ -4,6 +4,7 @@ const { default: mongoose } = require("mongoose");
 const userModel = require("../model/user.model");
 const storeModel = require("../model/store.model");
 const bannedDeviceModel = require("../model/bannedDevice.model");
+const rechargeHistoryModel = require("../model/rechargeHistory.model");
 
 exports.adminLogin = async (req, res) => {
   let { username, password } = req.body;
@@ -122,7 +123,7 @@ exports.updateUser = async (req, res) => {
 };
 
 exports.addItemStore = async (req, res) => {
-  const { price, name, validity } = req.body;
+  const { price, name, validity, status } = req.body;
 
   console.log(req.file);
   if (!req.file)
@@ -138,6 +139,7 @@ exports.addItemStore = async (req, res) => {
     name: name,
     validity: validity,
     storeUrl: displayPhoto,
+    status: status,
   })
     .save()
     .then(async (success) => {
@@ -194,6 +196,62 @@ exports.addDeviceIntoBlock = async (req, res) => {
         status: false,
         message: `error`,
         error,
+      });
+    });
+};
+
+exports.recharge = async (req, res) => {
+  const { userId, coin } = req.body;
+
+  await userModel
+    .findOneAndUpdate(
+      { _id: mongoose.Types.ObjectId(userId) },
+      {
+        $set: { coin: coin },
+      },
+      { returnOriginal: false }
+    )
+    .then(async (success) => {
+      await new rechargeHistoryModel({
+        usrId: userId,
+        coinAdded: coin,
+      }).save();
+      return res.json({
+        status: true,
+        message: "coin added",
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
+
+exports.getRechargeHistory = async (req, res) => {
+  await rechargeHistoryModel
+    .aggregate([
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "usrId",
+          as: "users",
+        },
+      },
+    ])
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: "recharge history",
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
       });
     });
 };

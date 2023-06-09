@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 
 const storeSchema = new mongoose.Schema({
   price: {
-    type: Number
+    type: Number,
   },
   validity: {
-    type: Number
+    type: Number,
   },
   name: {
     type: String,
@@ -13,6 +13,9 @@ const storeSchema = new mongoose.Schema({
   },
   storeUrl: {
     type: String,
+  },
+  status: {
+    type: Number,
   },
 });
 
