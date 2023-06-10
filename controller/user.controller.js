@@ -98,6 +98,14 @@ exports.login = async (req, res) => {
 
   const isUserFound = await userModel.findOne({ mobile: mobile });
 
+  
+  if (!isUserFound) {
+    return res.json({
+      success: false,
+      message: "user not registered please register",
+    });
+  }
+  
   if (isUserFound.isBlocked == true) {
     return res.json({
       success: false,
@@ -105,12 +113,6 @@ exports.login = async (req, res) => {
     });
   }
 
-  if (!isUserFound) {
-    return res.json({
-      success: false,
-      message: "user not registered please register",
-    });
-  }
 
   if (otp === 1122) {
     return res.json({
