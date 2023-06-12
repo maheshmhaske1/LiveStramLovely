@@ -367,6 +367,36 @@ exports.getAcceptedRequests = async (req, res) => {
     });
 };
 
+exports.kickFromLive = async (req, res) => {
+  const { liveId, userId } = req.body;
+
+  const us = await requestedUsersLiveModel.find({
+    liveId: liveId,
+    userId: mongoose.Types.ObjectId(userId),
+    // liveId: '647da74a0b24795aaf086883'
+  });
+
+  console.log(us);
+  await requestedUsersLiveModel
+    .findOneAndDelete({
+      liveId: liveId,
+      userId: mongoose.Types.ObjectId(userId),
+    })
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: `user has been kicked out`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "error",
+      });
+    });
+};
+
 exports.getLiveById = async (req, res) => {
   const { liveId } = req.params;
 
