@@ -13,6 +13,10 @@ const liveSchema = new mongoose.Schema({
   blockedUsers: {
     type: [mongoose.Types.ObjectId],
   },
+  coin: {
+    type: Number,
+    default: 0,
+  },
   isEnded: {
     type: Boolean,
     default: false,

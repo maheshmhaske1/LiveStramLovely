@@ -1,7 +1,8 @@
-const { default: mongoose, trusted } = require("mongoose");
+const { default: mongoose, trusted, mongo } = require("mongoose");
 const liveModel = require("../model/Live/Live.model");
 const liveJoinedModel = require("../model/Live/liveUsers.model");
 const requestedUsersLiveModel = require("../model/Live/requesJoin.model");
+const userModel = require("../model/user.model");
 
 exports.goLive = async (req, res) => {
   const { userId, liveUniqueId, channelName } = req.body;
@@ -466,4 +467,86 @@ exports.getLiveById = async (req, res) => {
         message: "error",
       });
     });
+};
+
+exports.sendCoin = async (req, res) => {
+  const { liveId, senderId, reciverId, coin } = req.body;
+
+  const isSenderExists = await userModel.findOne({
+    _id: mongoose.Types.ObjectId(senderId),
+  });
+
+  if (!isSenderExists) {
+    return res.json({
+      status: false,
+      message: "no sender exists",
+    });
+  }
+
+  const isreciverExists = await userModel.findOne({
+    _id: mongoose.Types.ObjectId(reciverId),
+  });
+
+  if (!isreciverExists) {
+    return res.json({
+      status: false,
+      message: "no reciver exists",
+    });
+  }
+
+  const isLiveExists = await liveModel.findOne({
+    _id: mongoose.Types.ObjectId(liveId),
+  });
+
+  if (!isLiveExists) {
+    return res.json({
+      status: false,
+      message: "no live exists",
+    });
+  }
+
+  if (isSenderExists.coin < coin) {
+    return res.json({
+      status: false,
+      message: "not enough coins",
+    });
+  }
+
+  // console.log(isreciverExists.LiveEarningcoin);
+  let liveCoin = isLiveExists.coin + coin;
+  let senderCoin = isSenderExists.coin - coin;
+  let reciverLiveCoins = isreciverExists.LiveEarningcoin;
+
+  await liveModel.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(liveId) },
+    { $set: { coin: liveCoin } }
+  );
+
+  await userModel.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(senderId) },
+    { $set: { coin: senderCoin } }
+  );
+
+  await userModel.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(reciverId) },
+    { $set: { LiveEarningcoin: isreciverExists.LiveEarningcoin + coin } }
+  );
+
+  await liveModel.findOneAndUpdate(
+    { _id: mongoose.Types.ObjectId(liveId) },
+    { $set: { coin: liveCoin } }
+  )
+  .then((success)=>{
+    return res.json ({
+      status:true,
+      message:"coin sends with user",
+      data:success
+    })
+  })
+  .catch((error)=>{
+    return res.json ({
+      status:false,
+      message:"eorro"
+    })
+  })
 };

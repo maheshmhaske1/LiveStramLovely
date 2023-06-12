@@ -14,5 +14,6 @@ router.put("/request-update", live.updateLiveJoinRequest); //
 router.get("/get-pending-request/:liveId", live.getPendingRequests); //
 router.get("/get-accepted-request/:liveId", live.getAcceptedRequests); //
 router.post("/kick-user", live.kickFromLive); //
+router.post("/send-coin", live.sendCoin); //
 
 module.exports = router;
