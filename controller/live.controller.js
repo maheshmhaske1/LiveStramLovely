@@ -3,6 +3,8 @@ const liveModel = require("../model/Live/Live.model");
 const liveJoinedModel = require("../model/Live/liveUsers.model");
 const requestedUsersLiveModel = require("../model/Live/requesJoin.model");
 const userModel = require("../model/user.model");
+const liveEarningHostory = require("../model/LiveStreamEarningHistory.model");
+const liveearningModel = require("../model/LiveStreamEarningHistory.model");
 
 exports.goLive = async (req, res) => {
   const { userId, liveUniqueId, channelName } = req.body;
@@ -532,21 +534,71 @@ exports.sendCoin = async (req, res) => {
     { $set: { LiveEarningcoin: isreciverExists.LiveEarningcoin + coin } }
   );
 
-  await liveModel.findOneAndUpdate(
-    { _id: mongoose.Types.ObjectId(liveId) },
-    { $set: { coin: liveCoin } }
-  )
+  await liveModel
+    .findOneAndUpdate(
+      { _id: mongoose.Types.ObjectId(liveId) },
+      { $set: { coin: liveCoin } }
+    )
+    .then(async (success) => {
+      await new liveEarningHostory({
+        senderId: senderId,
+        receiverId: reciverId,
+        coin: coin,
+        liveId: liveId,
+      }).save();
+
+      return res.json({
+        status: true,
+        message: "coin sends with user",
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "eorro",
+      });
+    });
+};
+
+exports.getLiveEarningHistory = async (req, res) => {
+  liveearningModel.aggregate([
+    {
+      $lookup: {
+        from: "users",
+        foreignField: "_id",
+        localField: "senderId",
+        as: "sender",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        foreignField: "_id",
+        localField: "receiverId",
+        as: "receiver",
+      },
+    },
+    {
+      $lookup: {
+        from: "lives",
+        foreignField: "_id",
+        localField: "liveId",
+        as: "live",
+      },
+    },
+  ])
   .then((success)=>{
-    return res.json ({
+    return res.json({
       status:true,
-      message:"coin sends with user",
+      message:"live earning history",
       data:success
     })
   })
   .catch((error)=>{
-    return res.json ({
+    return res.json({
       status:false,
-      message:"eorro"
+      message:"eror"
     })
   })
 };
