@@ -15,6 +15,7 @@ router.get("/get-pending-request/:liveId", live.getPendingRequests); //
 router.get("/get-accepted-request/:liveId", live.getAcceptedRequests); //
 router.post("/kick-user", live.kickFromLive); //
 router.post("/send-coin", live.sendCoin); //
-router.get('/live-earning-history',live.getLiveEarningHistory)
+router.get('/live-all-earning-history',live.getLiveEarningHistory)
+router.get('/live-earning-history/:liveId',live.getLiveEarningHistorybylive)
 
 module.exports = router;

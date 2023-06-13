@@ -562,43 +562,90 @@ exports.sendCoin = async (req, res) => {
 };
 
 exports.getLiveEarningHistory = async (req, res) => {
-  liveearningModel.aggregate([
-    {
-      $lookup: {
-        from: "users",
-        foreignField: "_id",
-        localField: "senderId",
-        as: "sender",
+  liveearningModel
+    .aggregate([
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "senderId",
+          as: "sender",
+        },
       },
-    },
-    {
-      $lookup: {
-        from: "users",
-        foreignField: "_id",
-        localField: "receiverId",
-        as: "receiver",
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "receiverId",
+          as: "receiver",
+        },
       },
-    },
-    {
-      $lookup: {
-        from: "lives",
-        foreignField: "_id",
-        localField: "liveId",
-        as: "live",
+      {
+        $lookup: {
+          from: "lives",
+          foreignField: "_id",
+          localField: "liveId",
+          as: "live",
+        },
       },
-    },
-  ])
-  .then((success)=>{
-    return res.json({
-      status:true,
-      message:"live earning history",
-      data:success
+    ])
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: "live earning history",
+        data: success,
+      });
     })
-  })
-  .catch((error)=>{
-    return res.json({
-      status:false,
-      message:"eror"
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "eror",
+      });
+    });
+};
+
+exports.getLiveEarningHistorybylive = async (req, res) => {
+  liveearningModel
+    .aggregate([
+      {
+        $match: { liveId: mongoose.Types.ObjectId(req.params.liveId) },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "senderId",
+          as: "sender",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "receiverId",
+          as: "receiver",
+        },
+      },
+      {
+        $lookup: {
+          from: "lives",
+          foreignField: "_id",
+          localField: "liveId",
+          as: "live",
+        },
+      },
+    ])
+    .then((success) => {
+      return res.json({
+        status: true,
+        message: "live earning history",
+        data: success,
+      });
     })
-  })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: "eror",
+      });
+    });
 };
