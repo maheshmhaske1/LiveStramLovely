@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
   id: { type: String },
+  firebase_id: { type: String },
   deviceId: { type: String },
   token: {
     type: String,

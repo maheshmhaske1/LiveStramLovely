@@ -15,7 +15,7 @@ const userStoreModel = require("../model/userStore.model");
 const bannedDeviceModel = require("../model/bannedDevice.model");
 
 exports.createUser = async (req, res) => {
-  let { name, email, mobile, about, dob, gender } = req.body;
+  let { name, email, mobile, about, dob, gender,firebase_id } = req.body;
 
   const isUserFound = await userModel.findOne({ email: email });
   if (isUserFound) {
@@ -56,6 +56,7 @@ exports.createUser = async (req, res) => {
     about: about,
     gender: gender,
     id: id,
+    firebase_id:firebase_id
   })
     .save()
     .then(async (success) => {
