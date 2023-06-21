@@ -19,6 +19,7 @@ exports.goLive = async (req, res) => {
       return res.json({
         status: true,
         message: "Live details added",
+        data:success
       });
     })
     .catch((error) => {
