@@ -16,6 +16,8 @@ router.post(
 );
 router.get("/getRechargeHistory", authenticate_admin, admin.getRechargeHistory);
 router.post("/add-store", upload_store, admin.addItemStore);
+router.post("/add-levels", upload_store, admin.addLevelMaster);
+router.post("/delete-levels", upload_store, admin.deleteLevelMaster);
 router.get("/get-all-store", admin.getAllStores);
 
 module.exports = router;

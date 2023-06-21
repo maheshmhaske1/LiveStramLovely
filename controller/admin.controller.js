@@ -5,6 +5,7 @@ const userModel = require("../model/user.model");
 const storeModel = require("../model/store.model");
 const bannedDeviceModel = require("../model/bannedDevice.model");
 const rechargeHistoryModel = require("../model/rechargeHistory.model");
+const levelMasterModel = require("../model/levelMaster.model");
 
 exports.adminLogin = async (req, res) => {
   let { username, password } = req.body;
@@ -252,6 +253,97 @@ exports.getRechargeHistory = async (req, res) => {
       return res.json({
         status: false,
         message: "error",
+      });
+    });
+};
+
+
+
+exports.addLevel = async (req, res) => {
+  const { price, name, validity, status } = req.body;
+
+  console.log(req.file);
+  if (!req.file)
+    return res.json({
+      status: false,
+      message: `please select image`,
+    });
+
+  const displayPhoto = req.file.filename;
+  console.log(displayPhoto);
+  await new storeModel({
+    price: price,
+    name: name,
+    validity: validity,
+    storeUrl: displayPhoto,
+    status: status,
+  })
+    .save()
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `store added successfully successfully`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+};
+
+
+exports.addLevelMaster = async (req, res) => {
+  const { coinRequire } = req.body;
+
+  console.log(req.file);
+  if (!req.file)
+    return res.json({
+      status: false,
+      message: `please select image`,
+    });
+
+  const displayPhoto = req.file.filename;
+  await new levelMasterModel({
+    coinRequire: coinRequire,
+    levelImgUrl: displayPhoto,
+  })
+    .save()
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `level added successfully`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+};
+
+exports.deleteLevelMaster = async (req, res) => {
+  const { levelId } = req.body;
+
+ await levelMasterModel.findOneAndDelete({_id:mongoose.Types.ObjectId(levelId)})
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `level deleted successfully`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
       });
     });
 };
