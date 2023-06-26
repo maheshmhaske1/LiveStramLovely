@@ -7,6 +7,10 @@ const liveJoinedSchema = new mongoose.Schema({
   liveId: {
     type: mongoose.Types.ObjectId,
   },
+  isAdmin:{
+    type:Boolean,
+    default:false
+  }
 });
 
 var liveJoinedModel = mongoose.model("live_joined", liveJoinedSchema);

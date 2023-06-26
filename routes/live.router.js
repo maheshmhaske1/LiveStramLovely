@@ -20,5 +20,7 @@ router.get('/live-earning-history/:liveId', live.getLiveEarningHistorybylive)
 router.post('/mute_user', live.muteUser)
 router.post('/kick_user', live.kickUser)
 router.post('/unkick_user', live.removekickUser)
+router.get('/getkickedUsers/:hostId', live.getkickedUser)
+router.post('/makeAdmin', live.liveUserUpdate)
 
 module.exports = router;

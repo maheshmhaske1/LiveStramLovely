@@ -7,7 +7,7 @@ const liveEarningHostory = require("../model/LiveStreamEarningHistory.model");
 const liveearningModel = require("../model/LiveStreamEarningHistory.model");
 
 exports.goLive = async (req, res) => {
-  const { userId, liveUniqueId, channelName,hostId } = req.body;
+  const { userId, liveUniqueId, channelName, hostId } = req.body;
 
   await new liveModel({
     userId: userId,
@@ -61,17 +61,17 @@ exports.getLives = async (req, res) => {
 };
 
 exports.watchLive = async (req, res) => {
-  const { userId, liveId ,hostId} = req.body;
+  const { userId, liveId, hostId } = req.body;
 
   const isuseriskicked = await userModel.findOne(
     { _id: hostId, kickedUser: { $in: [userId] } }
   );
 
   console.log(isuseriskicked)
-  if(isuseriskicked){
+  if (isuseriskicked) {
     return res.json({
-      status:false,
-      message:"you are kicked"
+      status: false,
+      message: "you are kicked"
     })
   }
 
@@ -129,6 +129,31 @@ exports.watchLive = async (req, res) => {
       });
     });
 };
+
+exports.liveUserUpdate = async (req, res) => {
+  const { liveId, userId, status } = req.body
+
+  await liveJoinedModel.findOneAndUpdate({
+    liveId: mongoose.Types.ObjectId(liveId),
+    userId: mongoose.Types.ObjectId(userId),
+  }, {
+    $set: {
+      status: status
+    }
+  })
+  .then(success=>{
+    return res.json({
+      status:true,
+      message:"updated"
+    })
+  })
+  .catch(error=>{
+    return res.json({
+      status:false,
+      message:"updated"
+    })
+  })
+}
 
 exports.addUserInBlockList = async (req, res) => {
   const { userId, liveId } = req.body;
@@ -663,7 +688,6 @@ exports.getLiveEarningHistorybylive = async (req, res) => {
     });
 };
 
-
 exports.muteUser = async (req, res) => {
   const { liveId, userId } = req.body
   liveModel.updateOne(
@@ -714,6 +738,37 @@ exports.kickUser = async (req, res) => {
   }
 };
 
+exports.getkickedUser = async (req, res) => {
+  const { hostId } = req.params
+
+  const user = await userModel.findOne({ _id: mongoose.Types.ObjectId(hostId) })
+  // console.log(user)
+  let kickedUser
+  if (user) kickedUser = user.kickedUser
+  let len = kickedUser.length
+
+
+  let kicked = []
+  if (kickedUser) {
+    kickedUser.map(async (kickedUser, i) => {
+      const user = await userModel.findOne({ _id: kickedUser })
+      kicked.push(user)
+      if (len === i + 1)
+        ret()
+
+    })
+  }
+
+  function ret() {
+    return res.json({
+      status: true,
+      message: "kicked users",
+      user: kicked
+    })
+  }
+
+}
+
 exports.removekickUser = async (req, res) => {
   const { kickedUserId, hostId } = req.body;
 
@@ -744,3 +799,4 @@ exports.removekickUser = async (req, res) => {
     });
   }
 };
+
