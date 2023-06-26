@@ -18,5 +18,7 @@ router.post("/send-coin", live.sendCoin); //
 router.get('/live-all-earning-history', live.getLiveEarningHistory)
 router.get('/live-earning-history/:liveId', live.getLiveEarningHistorybylive)
 router.post('/mute_user', live.muteUser)
+router.post('/kick_user', live.kickUser)
+router.post('/unkick_user', live.removekickUser)
 
 module.exports = router;

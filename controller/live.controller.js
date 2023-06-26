@@ -7,7 +7,7 @@ const liveEarningHostory = require("../model/LiveStreamEarningHistory.model");
 const liveearningModel = require("../model/LiveStreamEarningHistory.model");
 
 exports.goLive = async (req, res) => {
-  const { userId, liveUniqueId, channelName } = req.body;
+  const { userId, liveUniqueId, channelName,hostId } = req.body;
 
   await new liveModel({
     userId: userId,
@@ -19,7 +19,7 @@ exports.goLive = async (req, res) => {
       return res.json({
         status: true,
         message: "Live details added",
-        data:success
+        data: success
       });
     })
     .catch((error) => {
@@ -61,7 +61,19 @@ exports.getLives = async (req, res) => {
 };
 
 exports.watchLive = async (req, res) => {
-  const { userId, liveId } = req.body;
+  const { userId, liveId ,hostId} = req.body;
+
+  const isuseriskicked = await userModel.findOne(
+    { _id: hostId, kickedUser: { $in: [userId] } }
+  );
+
+  console.log(isuseriskicked)
+  if(isuseriskicked){
+    return res.json({
+      status:false,
+      message:"you are kicked"
+    })
+  }
 
   const liveData = await liveModel.findOne({
     _id: mongoose.Types.ObjectId(liveId),
@@ -652,8 +664,8 @@ exports.getLiveEarningHistorybylive = async (req, res) => {
 };
 
 
-exports.muteUser = async(req,res)=>{
-  const {liveId,userId} = req.body
+exports.muteUser = async (req, res) => {
+  const { liveId, userId } = req.body
   liveModel.updateOne(
     { _id: mongoose.Types.ObjectId(liveId) },
     { $push: { mutedUser: userId } },
@@ -663,11 +675,72 @@ exports.muteUser = async(req,res)=>{
         // Handle the error
       } else {
         return res.json({
-          status:true,
-          message:"Muted user added successfully"
+          status: true,
+          message: "Muted user added successfully"
         })
       }
     }
   );
-  
 }
+
+exports.kickUser = async (req, res) => {
+  const { kickedUserId, hostId } = req.body;
+
+  try {
+    const result = await userModel.updateOne(
+      { _id: mongoose.Types.ObjectId(hostId) },
+      { $push: { kickedUser: kickedUserId } }
+    );
+
+    if (result.nModified === 1) {
+      return res.json({
+        status: true,
+        message: "User kicked successfully",
+        data: result,
+      });
+    } else {
+      return res.json({
+        status: false,
+        message: "kicked user",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    // Handle the error
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.removekickUser = async (req, res) => {
+  const { kickedUserId, hostId } = req.body;
+
+  try {
+    const result = await userModel.updateOne(
+      { _id: mongoose.Types.ObjectId(hostId) },
+      { $pull: { kickedUser: kickedUserId } }
+    );
+
+    if (result.nModified === 1) {
+      return res.json({
+        status: true,
+        message: "User kicked successfully",
+        data: result,
+      });
+    } else {
+      return res.json({
+        status: false,
+        message: "un-kicked user",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    // Handle the error
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};

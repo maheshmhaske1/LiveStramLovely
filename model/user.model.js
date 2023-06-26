@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  kickedUser: {
+    type: [mongoose.Types.ObjectId]
+  },
   id: { type: String },
   firebase_id: { type: String },
   deviceId: { type: String },
