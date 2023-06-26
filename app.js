@@ -15,6 +15,7 @@ var level = require("./routes/level.router");
 var live = require("./routes/live.router");
 var admin = require("./routes/admin.router");
 var notification = require('./routes/notification.router')
+var liveComments = require('./routes/liveComments.router')
 
 var app = express();
 db.dbConnection();
@@ -50,6 +51,7 @@ app.use("/level", level);
 app.use("/live", live);
 app.use("/admin", admin);
 app.use("/notification", notification);
+app.use("/liveComments", liveComments);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

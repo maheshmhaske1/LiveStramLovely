@@ -17,6 +17,9 @@ const liveSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  mutedUser: {
+    type: [mongoose.Types.ObjectId]
+  },
   isEnded: {
     type: Boolean,
     default: false,

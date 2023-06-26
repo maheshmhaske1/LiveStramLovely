@@ -650,3 +650,24 @@ exports.getLiveEarningHistorybylive = async (req, res) => {
       });
     });
 };
+
+
+exports.muteUser = async(req,res)=>{
+  const {liveId,userId} = req.body
+  liveModel.updateOne(
+    { _id: mongoose.Types.ObjectId(liveId) },
+    { $push: { mutedUser: userId } },
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        // Handle the error
+      } else {
+        return res.json({
+          status:true,
+          message:"Muted user added successfully"
+        })
+      }
+    }
+  );
+  
+}

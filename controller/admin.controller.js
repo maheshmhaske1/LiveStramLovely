@@ -331,7 +331,7 @@ exports.addLevelMaster = async (req, res) => {
 exports.deleteLevelMaster = async (req, res) => {
   const { levelId } = req.body;
 
- await levelMasterModel.findOneAndDelete({_id:mongoose.Types.ObjectId(levelId)})
+  await levelMasterModel.findOneAndDelete({ _id: mongoose.Types.ObjectId(levelId) })
     .then(async (success) => {
       return res.json({
         status: true,
