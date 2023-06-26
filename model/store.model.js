@@ -16,6 +16,7 @@ const storeSchema = new mongoose.Schema({
   },
   status: {
     type: Number,
+    default:1
   },
 });
 
