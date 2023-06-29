@@ -7,9 +7,9 @@ const liveJoinedSchema = new mongoose.Schema({
   liveId: {
     type: mongoose.Types.ObjectId,
   },
-  isAdmin:{
-    type:Boolean,
-    default:false
+  isAdmin: {
+    type: Boolean,
+    default: false
   }
 });
 

@@ -6,6 +6,33 @@ const storeModel = require("../model/store.model");
 const bannedDeviceModel = require("../model/bannedDevice.model");
 const rechargeHistoryModel = require("../model/rechargeHistory.model");
 const levelMasterModel = require("../model/levelMaster.model");
+const stickerModel = require("../model/sticker.model");
+const adModel = require("../model/ad.model");
+const { stat } = require("fs-extra");
+
+exports.addAdmin = async (req, res) => {
+  const { Permissions, username, password } = req.body
+
+  await new adminModel({
+    Permissions: Permissions,
+    username: username,
+    password: password
+  }).save()
+    .then(success => {
+      return res.json({
+        status: true,
+        message: "admin added",
+        data: success
+      })
+    })
+    .catch(error=>{
+      return res.json({
+        status: true,
+        message: "something went wrong",
+        data: success
+      })
+    })
+}
 
 exports.adminLogin = async (req, res) => {
   let { username, password } = req.body;
@@ -257,8 +284,6 @@ exports.getRechargeHistory = async (req, res) => {
     });
 };
 
-
-
 exports.addLevel = async (req, res) => {
   const { price, name, validity, status } = req.body;
 
@@ -295,6 +320,82 @@ exports.addLevel = async (req, res) => {
     });
 };
 
+exports.addSticker = async (req, res) => {
+  const { title } = req.body;
+
+  console.log(req.file);
+  if (!req.file)
+    return res.json({
+      status: false,
+      message: `please select image`,
+    });
+
+  const displayPhoto = req.file.filename;
+  console.log(displayPhoto);
+  await new stickerModel({
+    title: title,
+    url: displayPhoto,
+    status: 1
+  })
+    .save()
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `sticker added successfully`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+};
+
+exports.getAllSticker = async (req, res) => {
+  await stickerModel.find({})
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `stickers`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+};
+
+exports.updateSticker = async (req, res) => {
+  const { stickerId } = req.params
+  const update_data = req.body
+
+
+  await stickerModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(stickerId) },
+    {
+      $set: update_data
+    })
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `stickers updated`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+};
 
 exports.addLevelMaster = async (req, res) => {
   const { coinRequire } = req.body;
@@ -347,3 +448,90 @@ exports.deleteLevelMaster = async (req, res) => {
       });
     });
 };
+
+exports.addAd = async (req, res) => {
+  const { url } = req.body
+
+  await new adModel({
+    url: url
+  })
+    .save()
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `ad added successfully`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+}
+
+exports.updateAd = async (req, res) => {
+  const { AdId, url, status } = req.body
+
+  await adModel.findOneAndDelete({ _id: mongoose.Types.ObjectId(AdId) },
+    {
+      $set: { url: url, status: status }
+    })
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `ad updated`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+}
+
+exports.getAds = async (req, res) => {
+  const { status } = req.params
+
+  console.log(typeof (status))
+  await adModel.find({ status: status })
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `ad details`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+}
+
+exports.deleteAd = async (req, res) => {
+  const adId = req.params.adId
+
+  await adModel.findByIdAndDelete({ _id: adId })
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `ad deleted`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+}

@@ -12,6 +12,9 @@ const adminSchema = new mongoose.Schema({
   token: {
     type: String,
   },
+  Permissions:{
+    type:String
+  }
 });
 
 var adminModel = mongoose.model("admin", adminSchema);

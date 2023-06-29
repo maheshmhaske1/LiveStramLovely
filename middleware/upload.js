@@ -35,4 +35,16 @@ exports.upload_store = multer({
 }).single('store')
 
 
+exports.upload_banner = multer({
+    storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, `./public/banner/`)
+        },
+        filename: function (req, file, cb) {
+            cb(null, `banner` + `${Date.now()}` + `_` + file.originalname)
+        }
+    }),
+}).single('store')
+
+
 
