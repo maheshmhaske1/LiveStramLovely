@@ -29,13 +29,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Credentials": true,
-  })
-);
+app.use(cors())
+
 
 app.use(
   "/profile_images",
