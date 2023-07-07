@@ -23,9 +23,10 @@ router.get("/get-all-store", admin.getAllStores);
 router.post("/add-sticker", upload_store, admin.addSticker);
 router.get("/sticker/getall", admin.getAllSticker);
 router.put("/sticker/update/:stickerId", admin.updateSticker);
-router.post('/addAd',admin.addAd)
-router.post('/ad/get/:status',admin.getAds)
-router.delete('/ad/delete/:adId',admin.deleteAd)
-router.put('/ad/update',admin.updateAd)
+router.post('/addAd', admin.addAd)
+router.post('/ad/get/:status', admin.getAds)
+router.delete('/ad/delete/:adId', admin.deleteAd)
+router.put('/ad/update', admin.updateAd)
+router.get('/user/getByCountry', admin.getUserByCountry)
 
 module.exports = router;

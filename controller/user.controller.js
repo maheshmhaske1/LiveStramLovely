@@ -15,7 +15,7 @@ const userStoreModel = require("../model/userStore.model");
 const bannedDeviceModel = require("../model/bannedDevice.model");
 
 exports.createUser = async (req, res) => {
-  let { name, email, mobile, about, dob, gender,firebase_id } = req.body;
+  let { name, email, mobile, about, dob, gender, country } = req.body;
 
   const isUserFound = await userModel.findOne({ email: email });
   if (isUserFound) {
@@ -56,7 +56,7 @@ exports.createUser = async (req, res) => {
     about: about,
     gender: gender,
     id: id,
-    firebase_id:firebase_id
+    country: country
   })
     .save()
     .then(async (success) => {
@@ -99,14 +99,14 @@ exports.login = async (req, res) => {
 
   const isUserFound = await userModel.findOne({ mobile: mobile });
 
-  
+
   if (!isUserFound) {
     return res.json({
       success: false,
       message: "user not registered please register",
     });
   }
-  
+
   if (isUserFound.isBlocked == true) {
     return res.json({
       success: false,
@@ -835,7 +835,6 @@ exports.getUserPost = async (req, res) => {
 };
 
 // exports.getAllPost = async (req, res) => {};
-
 exports.getAllPost = async (req, res) => {
   await postModel
     .aggregate([
@@ -1060,3 +1059,4 @@ exports.isDeviceBanned = async (req, res) => {
     return res.json({ status: false, message: "this device is not banned" });
   }
 };
+

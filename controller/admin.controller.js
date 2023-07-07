@@ -25,7 +25,7 @@ exports.addAdmin = async (req, res) => {
         data: success
       })
     })
-    .catch(error=>{
+    .catch(error => {
       return res.json({
         status: true,
         message: "something went wrong",
@@ -524,6 +524,26 @@ exports.deleteAd = async (req, res) => {
       return res.json({
         status: true,
         message: `ad deleted`,
+        data: success,
+      });
+    })
+    .catch((error) => {
+      return res.json({
+        status: false,
+        message: `error`,
+        error,
+      });
+    });
+}
+
+exports.getUserByCountry = async (req, res) => {
+  const { country } = req.params
+
+  await userModel.find({ country: country })
+    .then(async (success) => {
+      return res.json({
+        status: true,
+        message: `user details`,
         data: success,
       });
     })
