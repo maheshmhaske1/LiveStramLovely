@@ -44,7 +44,7 @@ router.put("/post/comment/update", commentCOntroller.updateComment);
 router.delete("/post/comment/delete", commentCOntroller.deleteComment);
 
 router.post("/post/like/add", likeController.addLike);
-router.post("/getTopSender", userController.getTopSender);
+router.get("/getTopSender", userController.getTopSender);
 router.delete("/post/like/remove", likeController.deleteLike);
 router.post("/store/purchase", userController.buyStoreItem);
 router.put("/store/update", userController.updateUserStore);
