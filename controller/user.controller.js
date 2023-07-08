@@ -13,6 +13,7 @@ const posts = require("../model/post.model");
 const storeModel = require("../model/store.model");
 const userStoreModel = require("../model/userStore.model");
 const bannedDeviceModel = require("../model/bannedDevice.model");
+const userCoinHistoryModel = require("../model/userCoinSendHistory");
 
 exports.createUser = async (req, res) => {
   let { name, email, mobile, about, dob, gender, country } = req.body;
@@ -525,6 +526,10 @@ exports.sendGift = async (req, res) => {
       $set: { coin: sender_coin },
     }
   );
+  await new userCoinHistoryModel({
+    userId: sender,
+    sendedCoin: coin
+  }).save()
 
   await userModel
     .findOneAndUpdate(
@@ -1059,4 +1064,61 @@ exports.isDeviceBanned = async (req, res) => {
     return res.json({ status: false, message: "this device is not banned" });
   }
 };
+
+exports.getTopSender = async (req, res) => {
+  const now = new Date();
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // Subtract 7 days from current time
+
+  await userCoinHistoryModel.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: oneWeekAgo },
+      },
+    },
+
+    {
+      $group: {
+        _id: "$userId",
+        totalCoinsSent: { $sum: "$sendedCoin" },
+      },
+    },
+    {
+      $sort: {
+        totalCoinsSent: -1,
+      },
+    },
+    {
+      $limit: 10,
+    }
+  ]).then(success => {
+    console.log(success)
+    let data = success
+    let result = []
+    data.map(async (dataa, i) => {
+      const user = await userModel.findById({ _id: dataa._id })
+      if (user) {
+        dataa.name = user.name
+      }
+      result.push(dataa)
+      if (data.length == i + 1)
+        re()
+    })
+    function re() {
+      return res.json({
+        status: true,
+        message: "top sender",
+        data: result
+      })
+    }
+
+  })
+    .catch(error => {
+      return res.json({
+        status: false,
+        message: "Error"
+      })
+    })
+
+};
+
 
